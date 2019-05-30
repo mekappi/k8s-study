@@ -1,0 +1,23 @@
+apiVersion: apps/v1
+kind: ReplicaSet
+metadata: 
+  name: sample-rs
+spec:
+  replicas: 3
+  # １：このラベルが付いたものを常に監視しreplicaの数を保つ(オートヒーリング)
+  selector:
+    matchLabels:
+      app: sample-app
+  # ２：このラベルを付けてreplicaを作成する
+  # つまり１と２は同じでは無くてはならない 違うとオートヒーリングにより無限にpodを作成してしまうため、
+  # 同じでないとエラーになるようになっている
+  template:
+    metadata:
+      labels:
+        app: sample-app
+    spec:
+      containers: 
+      - name: nginx-container
+        image: nginx:1.12
+        ports:
+        - containerPort: 80

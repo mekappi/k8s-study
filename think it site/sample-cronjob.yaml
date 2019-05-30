@@ -1,0 +1,33 @@
+apiVersion: batch/v1beta1
+kind: CronJob
+metadata:
+  name: sample-cronjob
+spec:
+  schedule: "*/1 * * * *"
+  # これがtrueだとcronjobを一時停止させることができる
+  # suspend: true
+  
+  # 同時実行に関する設定(前に作成したjobがまだ終わっていない場合)
+  # Allow: 同時実行する (デフォルト)
+  # Forbid: 前のジョブが終わっていない場合、次のジョブは実行しない
+  # Replace: 前のジョブをキャンセルし、新たにジョブを開始する
+  concurrencyPolicy: Forbid
+  # CronJobは、Kubernetes Masterが指定した時刻になるとJobを作成する仕組みになっています。
+  # そのため、Kubernetes Masterが一時的にダウンしていた場合など、
+  # 開始時刻が遅れた場合に許容できる秒数を指定することが可能
+  # 例えば、毎時00分に起動するJobを「毎時00～05分にだけ実行可能」に設定する場合には、300secに設定しておく必要があります。デフォルトではどんなに開始時間が遅れた場合でもJobを生成するようになっています。
+  startingDeadlineSeconds: 30
+  # 保存する成功Jobの数(デフォルト3)
+  successfulJobsHistoryLimit: 5
+  # 保存する失敗Jobの数(デフォルト3)
+  failedJobsHistoryLimit: 5
+  jobTemplate:
+    spec:
+      template:
+        spec:
+          containers:
+          - name: sleep-container
+            image: centos:latest
+            command: ["sleep"]
+            args: ["30"]
+          restartPolicy: Never
